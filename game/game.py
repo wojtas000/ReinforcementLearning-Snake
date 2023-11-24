@@ -1,12 +1,12 @@
-from ..environment.environment import SnakeEnvironment
-from ..agent.network import DQN
+from environment.environment import SurvivalEnvironment
+from agent.network import DQN
 import torch
 import numpy as np
 import time
 
 
 if __name__ == "__main__":
-    env = SnakeEnvironment(grid_size=10)
+    env = SurvivalEnvironment(grid_size=6)
     state = env.reset()
     env.render()
     player = int(input("Enter player (0: Human, 1: RL agent): "))
@@ -14,7 +14,7 @@ if __name__ == "__main__":
     if player == 1:
         
         agent = DQN(env.grid_size, env.action_size)
-        model_path = torch.load('modelssnake_agent.pth')
+        model_path = torch.load('./snake_agent.pth')
         agent.load_state_dict(model_path)
         agent.eval()
 
