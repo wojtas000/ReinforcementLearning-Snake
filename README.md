@@ -18,3 +18,6 @@ Agent is a CNN-based model. It is supported with reinforcement learning to study
 The process of training the snake agent consists of two major steps:
 1. Survival + map exploring - In this stage the training process is aimed at making snake live as long as possible and explore the whole board. 
 2. Eating food + growing bigger - In this stage, the snake agent is rewarded for eating food (proportionally to its length. Therefore the longer the snake, the more encouragement it gets for eating more food, as it is also more dangerous and the snake could potentially try to avoid growing bigger). The snake is punished for not coming closer to food, to discourage him from running away from food.
+
+
+![Training process](https://github.com/wojtas000/Snake/blob/main/plots/snake_training.png)

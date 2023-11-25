@@ -1,27 +1,27 @@
 import numpy as np
 import random
 import matplotlib.pyplot as plt
+from typing import List, Tuple, Set
 
 class SurvivalEnvironment:
-
-    def __init__(self, grid_size=5):
-        self.grid_size = grid_size
-        self.state_size = grid_size * grid_size
-        self.action_size = 4
+    def __init__(self, grid_size: int = 5) -> None:
+        self.grid_size: int = grid_size
+        self.state_size: int = grid_size * grid_size
+        self.action_size: int = 4
         self.reset()
 
-    def random_action(self):
+    def random_action(self) -> int:
         '''
         Returns a random action from the action space
         '''
         return random.randint(0, self.action_size - 1)
 
-    def get_direction(self, action):
+    def get_direction(self, action: int) -> Tuple[int, int]:
         '''
         Returns the direction of the action
         '''
         if action == 0:  # Left
-            new_direction = (-1, 0)
+            new_direction: Tuple[int, int] = (-1, 0)
         elif action == 1:  # Right
             new_direction = (1, 0)
         elif action == 2:  # Up
@@ -33,61 +33,58 @@ class SurvivalEnvironment:
         
         return new_direction
 
-    def reset(self):
+    def reset(self) -> List[int]:
         '''
         Resets the environment to the initial state
         '''
-        self.grid = np.zeros((self.grid_size, self.grid_size), dtype=int)
-        self.snake = [(0, 0)]
-        self.head = self.snake[0]
-        self.food = self.generate_food()
-        self.direction = (1, 0)  # Initial direction: right
-        self.done = False
-        self.score = 0
-        self.steps = 0
-        self.max_steps = self.grid_size * self.grid_size  * 2
-        self.move_counter_from_last_eat = 0
-        self.visited_positions = set()  
+        self.grid: List[List[int]] = np.zeros((self.grid_size, self.grid_size), dtype=int).tolist()
+        self.snake: List[Tuple[int, int]] = [(0, 0)]
+        self.head: Tuple[int, int] = self.snake[0]
+        self.food: Tuple[int, int] = self.generate_food()
+        self.direction: Tuple[int, int] = (1, 0)  # Initial direction: right
+        self.done: bool = False
+        self.score: int = 0
+        self.steps: int = 0
+        self.max_steps: int = self.grid_size * self.grid_size * 2
+        self.move_counter_from_last_eat: int = 0
+        self.visited_positions: Set[Tuple[int, int]] = set()
 
-        # Place the snake and food on the grid
         self.update_grid()
-
-        # Return the current state as a flattened grid
         return self.get_state()
 
-    def generate_food(self):
+    def generate_food(self) -> Tuple[int, int]:
         '''
         Generates a new food position that is not on the snake
         '''
         while True:
-            food = (random.randint(0, self.grid_size - 1), random.randint(0, self.grid_size - 1))
+            food: Tuple[int, int] = (random.randint(0, self.grid_size - 1), random.randint(0, self.grid_size - 1))
             if food not in self.snake:
                 return food
 
-    def update_grid(self):
+    def update_grid(self) -> None:
         '''
         Updates the grid with the current snake and food positions
         '''
-        self.grid = np.zeros((self.grid_size, self.grid_size), dtype=int)
+        self.grid = np.zeros((self.grid_size, self.grid_size), dtype=int).tolist()
         for x, y in self.snake:
-            self.grid[y][x] = 1  # Mark snake body as 1
+            self.grid[y][x] = 1
             self.visited_positions.add((x, y))
         x, y = self.food
-        self.grid[y][x] = 2  # Mark food as 2
+        self.grid[y][x] = 2
 
-    def get_state(self):
+    def get_state(self) -> List[int]:
         '''
         Returns the current state as a flattened grid
         '''
-        return self.grid.flatten()
+        return [cell for row in self.grid for cell in row]
 
-    def calculate_distance(self, a, b):
+    def calculate_distance(self, a: Tuple[int, int], b: Tuple[int, int]) -> int:
         '''
         Calculates the Manhattan distance between two points
         '''
         return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
-    def collision_with_wall(self, new_head):
+    def collision_with_wall(self, new_head: Tuple[int, int]) -> bool:
         '''
         Checks if the new head position collides with the wall
         '''
@@ -98,42 +95,42 @@ class SurvivalEnvironment:
             or new_head[1] >= self.grid_size
         )
     
-    def collision_with_self(self, new_head):
+    def collision_with_self(self, new_head: Tuple[int, int]) -> bool:
         '''
         Checks if the new head position collides with the snake body
         '''
         return new_head in self.snake
 
-    def direction_opposite_to_current(self, direction):
+    def direction_opposite_to_current(self, direction: Tuple[int, int]) -> bool:
         '''
         Checks if the new direction is opposite to the current direction
         '''
         return (direction[0] + self.direction[0], direction[1] + self.direction[1]) == (0, 0)
 
-    def move_head(self, new_head):
+    def move_head(self, new_head: Tuple[int, int]) -> None:
         '''
         Moves the snake head to the new position
         '''
-        self.snake.insert(0, new_head) 
+        self.snake.insert(0, new_head)
         self.head = new_head
 
-    def step(self, action):
+    def step(self, action: int) -> Tuple[List[int], int, bool]:
         '''
-        Moves the snake in the given direction and returns the new state, reward and done flag
+        Moves the snake in the given direction and returns the new state, reward, and done flag
         '''
         if self.done:
             raise ValueError("Game over. Call reset() to restart the game.")
 
-        new_direction = self.get_direction(action)
+        new_direction: Tuple[int, int] = self.get_direction(action)
 
         if self.direction_opposite_to_current(new_direction):
             new_direction = self.direction 
 
-        new_head = (self.head[0] + new_direction[0], self.head[1] + new_direction[1])
+        new_head: Tuple[int, int] = (self.head[0] + new_direction[0], self.head[1] + new_direction[1])
 
         if self.collision_with_wall(new_head) or self.collision_with_self(new_head):
             self.done = True
-            reward = -10
+            reward: int = -10
         else:
             self.move_head(new_head)
             self.direction = new_direction
@@ -154,7 +151,7 @@ class SurvivalEnvironment:
 
         return self.get_state(), reward, self.done
     
-    def render(self):
+    def render(self) -> None:
         '''
         Renders the current state of the environment
         '''
@@ -170,7 +167,7 @@ class SurvivalEnvironment:
         plt.yticks([])  
         plt.pause(0.1)  
 
-    def exploration_reward(self):
+    def exploration_reward(self) -> int:
         '''
         Returns a reward for exploring a new position on the grid
         '''
@@ -179,22 +176,21 @@ class SurvivalEnvironment:
         else:
             return 0
         
-    def staying_alive_reward(self):
+    def staying_alive_reward(self) -> float:
         '''
         Returns a reward for staying alive
         '''
         return 1 / self.max_steps
     
-    def clear_tail(self):
+    def clear_tail(self) -> None:
         '''
         Removes the tail of the snake
         '''
-        removed_tail = self.snake.pop()
+        removed_tail: Tuple[int, int] = self.snake.pop()
         self.grid[removed_tail[1]][removed_tail[0]] = 0
 
-
 class EatAndGrowEnvironment(SurvivalEnvironment):
-    def step(self, action):
+    def step(self, action: int) -> Tuple[List[int], int, bool]:
         state, reward, done = super().step(action)
 
         # Additional reward for eating food and a penalty for not eating
@@ -202,39 +198,36 @@ class EatAndGrowEnvironment(SurvivalEnvironment):
             reward += 10  # Reward for eating food
         else:
             # calculate distance to food
-            distance_to_food = self.calculate_distance(self.head, self.food)
+            distance_to_food: int = self.calculate_distance(self.head, self.food)
             reward -= distance_to_food / self.grid_size ** 2
-
 
         return state, reward, done
 
 class FoodEnvironment(SurvivalEnvironment):
-
-    def __init__(self, grid_size=5):
+    def __init__(self, grid_size: int = 5) -> None:
         super().__init__(grid_size)
         
-
-    def step(self, action):
+    def step(self, action: int) -> Tuple[List[int], int, bool]:
         '''
-        Moves the snake in the given direction and returns the new state, reward and done flag
+        Moves the snake in the given direction and returns the new state, reward, and done flag
         '''
         if self.done:
             raise ValueError("Game over. Call reset() to restart the game.")
 
-        new_direction = self.get_direction(action)
+        new_direction: Tuple[int, int] = self.get_direction(action)
 
         if self.direction_opposite_to_current(new_direction):
             new_direction = self.direction 
 
-        new_head = (self.head[0] + new_direction[0], self.head[1] + new_direction[1])
+        new_head: Tuple[int, int] = (self.head[0] + new_direction[0], self.head[1] + new_direction[1])
 
         if self.collision_with_wall(new_head) or self.collision_with_self(new_head):
             self.done = True
-            reward = -10
+            reward: int = -10
         else:
             self.move_head(new_head)
             self.direction = new_direction
-            distance_to_food = self.calculate_distance(self.head, self.food)
+            distance_to_food: int = self.calculate_distance(self.head, self.food)
 
             if self.head == self.food:
                 self.food = self.generate_food()
