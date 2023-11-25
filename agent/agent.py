@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 from agent.network import DQN
 from agent.replay_buffer import ReplayBuffer
-from environment.environment import SurvivalEnvironment, EatAndGrowEnvironment
+from environment.environment import SurvivalEnvironment, EatAndGrowEnvironment, FoodEnvironment
 
 BATCH_SIZE = 64
 GAMMA = 0.99
@@ -25,12 +25,12 @@ episode_rewards = []
 
 if __name__ == "__main__":
     # Initialize the environment and hyperparameters
-    env = SurvivalEnvironment(grid_size=6) 
+    env = FoodEnvironment(grid_size=6)
     state_size = env.state_size
     action_size = env.action_size
     grid_size = env.grid_size
     dqn = DQN(grid_size, action_size)
-    # dqn.load_state_dict(torch.load('snake_agent.pth'))
+    dqn.load_state_dict(torch.load('models\\snake_agent_final_episode_2000.pth'))
     target_dqn = DQN(grid_size, action_size)
     target_dqn.load_state_dict(dqn.state_dict())
     optimizer = optim.Adam(dqn.parameters(), lr=0.001)
@@ -88,7 +88,7 @@ if __name__ == "__main__":
         print(f"Episode {episode + 1}, Reward: {total_reward}, Epsilon: {EPSILON:.3f}")
 
         if (episode + 1) % 1000 == 0:
-            checkpoint_name = f'models\\snake_agent_episode_{episode + 1}.pth'
+            checkpoint_name = f'models\\snake_agent_{episode + 1}.pth'
             torch.save(target_dqn.state_dict(), checkpoint_name)
 
         # if episode == NUM_EPISODES // 2:

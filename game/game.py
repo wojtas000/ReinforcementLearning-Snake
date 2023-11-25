@@ -14,7 +14,7 @@ if __name__ == "__main__":
     if player == 1:
         
         agent = DQN(env.grid_size, env.action_size)
-        model_path = torch.load('./snake_agent.pth')
+        model_path = torch.load('./models/snake_agent_10000.pth')
         agent.load_state_dict(model_path)
         agent.eval()
 

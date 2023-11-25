@@ -203,11 +203,54 @@ class EatAndGrowEnvironment(SurvivalEnvironment):
         else:
             # calculate distance to food
             distance_to_food = self.calculate_distance(self.head, self.food)
-            reward -= distance_to_food / self.grid_size 
+            reward -= distance_to_food / self.grid_size ** 2
 
 
         return state, reward, done
 
+class FoodEnvironment(SurvivalEnvironment):
+
+    def __init__(self, grid_size=5):
+        super().__init__(grid_size)
+        
+
+    def step(self, action):
+        '''
+        Moves the snake in the given direction and returns the new state, reward and done flag
+        '''
+        if self.done:
+            raise ValueError("Game over. Call reset() to restart the game.")
+
+        new_direction = self.get_direction(action)
+
+        if self.direction_opposite_to_current(new_direction):
+            new_direction = self.direction 
+
+        new_head = (self.head[0] + new_direction[0], self.head[1] + new_direction[1])
+
+        if self.collision_with_wall(new_head) or self.collision_with_self(new_head):
+            self.done = True
+            reward = -10
+        else:
+            self.move_head(new_head)
+            self.direction = new_direction
+            distance_to_food = self.calculate_distance(self.head, self.food)
+
+            if self.head == self.food:
+                self.food = self.generate_food()
+                self.score += 1
+                reward = 10 * self.score - distance_to_food / self.grid_size ** 2
+            else:
+                self.clear_tail()
+                reward = - distance_to_food / self.grid_size ** 2
+
+            self.update_grid()
+            self.steps += 1
+
+            if self.steps >= self.max_steps:
+                self.done = True
+
+        return self.get_state(), reward, self.done
 
 # Example usage:
 if __name__ == "__main__":
